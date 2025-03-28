@@ -110,7 +110,7 @@ def get_activities():
 
 
 @app.post("/activities/{activity_name}/signup")
-async def signup(activity_name: str, email: str = Query(...), name: str = Query(None)):
+async def signup(activity_name: str, email: str = Query(...)):
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
     
@@ -120,18 +120,13 @@ async def signup(activity_name: str, email: str = Query(...), name: str = Query(
     email = email.lower()
     
     # Check if the student is already registered
-    for participant in activity["participants"]:
-        if participant["email"] == email:
-            raise HTTPException(status_code=400, detail="Student is already registered for this activity")
+    if email in activity["participants"]:
+        raise HTTPException(status_code=400, detail="Student is already registered for this activity")
     
     # Check if the activity is full
     if len(activity["participants"]) >= activity["max_participants"]:
         raise HTTPException(status_code=400, detail="Activity is full")
     
-    # Use "Anonymous" if name is not provided
-    if not name:
-        name = "Anonymous"
-    
     # Add the student if not already registered
-    activity["participants"].append({"name": name, "email": email})
+    activity["participants"].append(email)
     return {"message": "Signup successful"}
