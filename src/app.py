@@ -110,7 +110,7 @@ def get_activities():
 
 
 @app.post("/activities/{activity_name}/signup")
-async def signup(activity_name: str, email: str = Query(...)):
+async def signup(activity_name: str, email: str = Query(...), name: str = Query(...)):
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
     
@@ -120,13 +120,33 @@ async def signup(activity_name: str, email: str = Query(...)):
     email = email.lower()
     
     # Validate student is not already signed up
-    if email in activity["participants"]:
+    if any(participant["email"] == email for participant in activity["participants"]):
         raise HTTPException(status_code=400, detail="Student is already registered for this activity")
     
     # Check if the activity is full
     if len(activity["participants"]) >= activity["max_participants"]:
         raise HTTPException(status_code=400, detail="Activity is full")
     
-    # Add the student if not already registered
-    activity["participants"].append(email)
+    # Add the student as a dictionary with name and email
+    activity["participants"].append({"name": name, "email": email})
     return {"message": "Signup successful"}
+
+
+@app.post("/activities/{activity_name}/unregister")
+async def unregister(activity_name: str, email: str = Query(...)):
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    
+    activity = activities[activity_name]
+    
+    # Normalize email to lowercase
+    email = email.lower()
+    
+    # Validate student is registered
+    participant = next((p for p in activity["participants"] if p["email"] == email), None)
+    if not participant:
+        raise HTTPException(status_code=400, detail="Student is not registered for this activity")
+    
+    # Remove the student
+    activity["participants"].remove(participant)
+    return {"message": "Unregistration successful"}

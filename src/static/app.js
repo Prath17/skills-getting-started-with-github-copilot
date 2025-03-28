@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="participants-section">
             <strong>Participants:</strong>
             <ul>
-              ${details.participants.map(participant => `<li>${participant.name} (${participant.email})</li>`).join("")}
+              ${createParticipantList(details.participants, name)}
             </ul>
           </div>
         `;
@@ -47,16 +47,64 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Function to handle unregistration
+  async function unregisterParticipant(activity, email) {
+    try {
+      const response = await fetch(
+        `/activities/${encodeURIComponent(activity)}/unregister?email=${encodeURIComponent(email)}`,
+        {
+          method: "POST",
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message);
+        fetchActivities(); // Refresh activities list
+      } else {
+        alert(result.detail || "An error occurred");
+      }
+    } catch (error) {
+      console.error("Error unregistering participant:", error);
+      alert("Failed to unregister. Please try again.");
+    }
+  }
+
+  // Update participants list to include unregister button
+  function createParticipantList(participants, activityName) {
+    return participants
+      .map(
+        (participant) => `
+        <li>
+          ${participant.name} (${participant.email})
+          <button class="unregister-btn" data-activity="${activityName}" data-email="${participant.email}">❌</button>
+        </li>
+      `
+      )
+      .join("");
+  }
+
+  // Event delegation for unregister buttons
+  activitiesList.addEventListener("click", (event) => {
+    if (event.target.classList.contains("unregister-btn")) {
+      const activity = event.target.getAttribute("data-activity");
+      const email = event.target.getAttribute("data-email");
+      unregisterParticipant(activity, email);
+    }
+  });
+
   // Handle form submission
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const email = document.getElementById("email").value;
+    const name = email.split("@")[0]; // Derive name from email for simplicity
     const activity = document.getElementById("activity").value;
 
     try {
       const response = await fetch(
-        `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}`,
+        `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`,
         {
           method: "POST",
         }
@@ -68,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        fetchActivities(); // Refresh activities list to ensure correct data
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";

@@ -17,7 +17,7 @@
       <section id="activities-container">
         <h3>Available Activities</h3>
         <div id="activities-list">
-          <!-- Activities will be loaded here -->
+          <!-- Activities will be dynamically loaded here -->
           <p>Loading activities...</p>
         </div>
       </section>
@@ -33,7 +33,7 @@
             <label for="activity">Select Activity:</label>
             <select id="activity" required>
               <option value="">-- Select an activity --</option>
-              <!-- Activity options will be loaded here -->
+              <!-- Activity options will be dynamically loaded here -->
             </select>
           </div>
           <button type="submit">Sign Up</button>
@@ -46,6 +46,12 @@
       <p>&copy; 2023 Mergington High School</p>
     </footer>
 
+    <script>
+      // Ensure the JavaScript file is correctly linked
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("Page loaded and JavaScript is running.");
+      });
+    </script>
     <script src="app.js"></script>
   </body>
 </html>
