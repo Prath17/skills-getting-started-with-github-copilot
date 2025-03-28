@@ -119,7 +119,7 @@ async def signup(activity_name: str, email: str = Query(...)):
     # Normalize email to lowercase
     email = email.lower()
     
-    # Check if the student is already registered
+    # Validate student is not already signed up
     if email in activity["participants"]:
         raise HTTPException(status_code=400, detail="Student is already registered for this activity")
     
